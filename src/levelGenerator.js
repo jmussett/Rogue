@@ -64,7 +64,13 @@ export class LevelGenerator {
 	 UpdateFrame() {
 	 	if (this.updateFrame && this.animate) {
 	 		this.updateFrame(this.grid);
-	 	}
+
+			var start = new Date().getTime();
+			var end = start;
+			while(end < start + 10) {
+				end = new Date().getTime();
+			}
+		 }
 	 }
 	 FinalFrame() {
 	 	if (this.updateFrame) {
