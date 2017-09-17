@@ -23,7 +23,7 @@ function MergeCells(cells, i, j, xIndex, yIndex, xBorderIndex, yBorderIndex) {
 }
 
 export class Player extends PIXI.Graphics {
-    constructor() {
+    constructor(options) {
         super();
         this.position.x = 0;
         this.position.y = 0;
@@ -31,7 +31,7 @@ export class Player extends PIXI.Graphics {
         this.yVelocity = 0;
         this.xVelocity = 0;
         this.friction = 0.9;
-        this.size = 50;
+        this.size = options.tileSize || 50;
         this.UpdateColor(0xFF0000);
     }
     UpdateColor(color) {

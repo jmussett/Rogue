@@ -1,4 +1,3 @@
-//import Promise from 'bluebird'; // Promise polyfill for IE11
 import {bootstrap} from 'aurelia-bootstrapper-webpack';
 
 bootstrap(function(aurelia) {
@@ -6,5 +5,5 @@ bootstrap(function(aurelia) {
     .standardConfiguration()
     .developmentLogging();
 
-  aurelia.start().then(() => aurelia.setRoot('app', document.body));
+  aurelia.start().then(() => aurelia.setRoot('site', document.body));
 });

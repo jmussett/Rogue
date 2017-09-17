@@ -21,6 +21,7 @@ export class LevelGenerator {
 		this.minDoors = options.minDoors || 1;
 		this.maxDoors = options.maxDoors || 4;
 		this.animate = options.animate || false;
+		this.animationDelay = options.animationDelay || 10;
 	 }
 	 Generate(updateFrame) {
 	 	this.updateFrame = updateFrame;
@@ -67,7 +68,7 @@ export class LevelGenerator {
 
 			var start = new Date().getTime();
 			var end = start;
-			while(end < start + 10) {
+			while(end < start + this.animationDelay) {
 				end = new Date().getTime();
 			}
 		 }

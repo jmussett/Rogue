@@ -1,0 +1,37 @@
+<template>
+	<h1>Roguelike Map Generation and Field of Vision</h1>
+	<p>What you see below is the result of experiments I have played with to mimic modern dungeon crawlers; like Diablo and Path of Exile, but also have the nostalgic feel from traditional Roguelike games; like Rogue, NetHack and Angband.</p>
+
+	<p>This was primarily developed in a 2D creation library known as <a href="http://www.pixijs.com">PIXI.js</a>, and Uses <a href="http://aurelia.io/">Aurelia</a> and <a href="https://webpack.js.org/">Webpack</a> to componentise and build the game.</p>
+
+	<compose view-model="app"
+			 view.bind="app.html"
+			 model.bind="{ animate: true, showPlayer: false }"></compose>
+
+	<h3>Map Generation</h3>
+	
+	<p>The algorithm used to generate the map above uses a variety of techniques that I have borrowed, invented and combined together to create maps that have a combination of rooms, open space and narrow corridors.</p>
+
+	<p>The generation itself happens inside a Web Worker. This helps manage concurrency and prevents the map generation from blocking the UI. If you're running on a slow machine, this might make the animation jittery and inconsistant.</p>
+
+	<ol>
+		<li>The first step is to randomly place rooms with varying position, height, and width.</li>
+		<li>Next, I use a popular maze generation algorithm known as <a href="http://weblog.jamisbuck.org/2010/12/27/maze-generation-recursive-backtracking">Recursive Backtracking</a> to populate the rest of the map with mazes.</li> 
+		<li>To connect the maze up to the rooms, I randomly place doors to open up each room, interconnecting all possible routes in the map.</li>
+		<li>Now that the rooms are connected, I remove all dead ends from the maze to allow for direct paths between each room. This is done by traversing all cells on the map, and removing those that have a single opening.</li>
+		<li>Now that we have direct routes between rooms in place. We're now left with leftover maze that makes traversing the map a pain. To resolve this, I developed an algorithm that reduces the slack of each remaining route to make them more direct.</li>
+		<li>Lastly, I remove all unnecessary maze walls and artifacts, resulting in what you see below.</li>
+	</ol>
+
+	<compose view-model="app"
+			 view.bind="app.html"
+			 model.bind="{ animate: false, showPlayer: true, showFOV: true, tileSize: 50, seed:'3254' }"></compose>
+
+	<h3>Field of Vision</h3>
+
+	<p>Above, I adapted an algorithm used for popular Roguelike games called <a href="http://www.roguebasin.com/index.php?title=FOV_using_recursive_shadowcasting">Recursive Shadowcasting</a> to cast a Field of Vision around the player, this is similar to a torch affect you see in modern 2D video games. I then use the distance the tile is from the player to determine the opacity, or lighting, that visible tiles should have at that given point in time.</p>
+	<p>I also implemented a very simple Fog of War mechanic that leaves viewed tiles a dark shade of gray once they have been visited.</p>
+	<p>You can control the red square above by using the WSAD keys.</p>
+
+	<p>I do intend to extend this to make it a fully functioning Rogue-Like game in the future. In the meantime, feel free to play around with the Maze Generation and Field of View demos above.</p>
+</template>

@@ -16,16 +16,6 @@ bundler.plugin('done', function (stats) {
     browserSync.reload();
 });
 
-// browserSync.use({
-//     plugin:  function () {},
-//     hooks: {
-//         "client:events": function () {
-//             return ["gamepad:button"]
-//         },
-//         "client:js": require("fs").readFileSync("./bs-gamepads.js")
-//     }
-// });
-
 browserSync.init({
     server: 'public',
     port: 8080,

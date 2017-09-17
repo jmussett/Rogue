@@ -9,15 +9,31 @@ import {Camera} from 'camera'
 import {FrameManager} from 'frameManager'
 
 export class App {
-	constructor() {
+	activate(model) {
+		this.model = model;
+	}
+	attached() {
 		PIXI.utils._saidHello = true;
 
-		this.renderer = new PIXI.WebGLRenderer(window.innerWidth, window.innerHeight, {
+		this.renderer = new PIXI.WebGLRenderer(this.content.offsetWidth, this.content.offsetHeight, {
 		    antialias: true
 		});
+
 		this.renderer.backgroundColor = 0xFFFFFF;
 
-		this.world = new World(50);
+		this.world = new World({
+			animate: this.model.animate == undefined ? true : this.model.animate,
+			animationDelay: this.model.animationDelay || 7,
+			showPlayer: this.model.showPlayer || false,
+			showFOV: this.model.showFOV || false,
+			tileSize: this.model.tileSize || 30,
+			seed: this.model.seed,
+			width: 50,
+			height: 50,
+			xPosition: 75,
+			yPosition: 75
+		});
+
 		this.camera = new Camera(this.world);
 		this.camera.width = this.renderer.width;
 		this.camera.height = this.renderer.height;
@@ -46,8 +62,7 @@ export class App {
 		});
 
 		this.frameManager.Start();
-	}
-	attached() {
+
 		this.content.appendChild(this.renderer.view);
 	}
 	Update() {
@@ -63,7 +78,6 @@ export class App {
 	    //     this.world.range += 1
 	    // } else if (this.IM.Action('ActionD') === 1) {
 	    //     this.world.range -= 1
-
 	    // }
 
 	    this.world.Update(this.IM);
