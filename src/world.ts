@@ -65,10 +65,6 @@ export class World extends PIXI.Container {
         this.currentRange = this.range;
         this.previousTime = Date.now();
 
-        if (this.showPlayer) {
-            this.addChild(this.player);
-        }
-
         this.addChild(this.light);
 
         this.levelWorker = new LevelWorker();
@@ -127,6 +123,10 @@ export class World extends PIXI.Container {
                     this.lightIndexes[i][j] = tile;
                     this.light.addChild(tile);
                 }
+            }
+
+            if (this.showPlayer) {
+                this.addChild(this.player);
             }
         }
     }
