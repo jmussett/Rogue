@@ -19,31 +19,41 @@ interface IWorldOptions {
     wallWidth?: number;
     mazeWidth?: number;
     roomAttempts?: number;
+    loadingContent?: PIXI.Container;
 }
 
 export class World extends PIXI.Container {
-    tileSize: number;
-    showPlayer: boolean;
+    stage: PIXI.Container;
     player: Player;
     light: PIXI.particles.ParticleContainer;
+    levelWorker: LevelWorker;
+    lightIndexes: PIXI.Sprite[][];
     fov: FieldOfView;
+    tileSize: number;
+    showPlayer: boolean;
     range: number;
     minRange: number;
     maxRange: number;
     currentRange: number;
     previousTime: number;
-    levelWorker: LevelWorker;
     created: boolean;
     currentX: number;
     currentY: number;
-    lightIndexes: PIXI.Sprite[][];
     grid: number[][];
+    loadingContent?: PIXI.Container;
 
     constructor(options: IWorldOptions) {
         super();
 
         this.tileSize = options.tileSize || 50;
         this.showPlayer = options.showPlayer === undefined ? true : options.showPlayer;
+
+        this.range = 40;
+
+        this.minRange = 2;
+        this.maxRange = 50;
+        this.currentRange = this.range;
+        this.previousTime = Date.now();
 
         this.player = new Player({
             tileSize: options.tileSize,
@@ -58,14 +68,21 @@ export class World extends PIXI.Container {
 
         this.fov = new FieldOfView(options.showFOV ? 0 : 1);
 
-        this.range = 40;
+        this.stage = new PIXI.Container();
 
-        this.minRange = 2;
-        this.maxRange = 50;
-        this.currentRange = this.range;
-        this.previousTime = Date.now();
+        this.stage.addChild(this.light);
 
-        this.addChild(this.light);
+        if (this.showPlayer) {
+            this.stage.addChild(this.player);
+        }
+
+        this.stage.visible = false;
+
+        this.addChild(this.stage);
+
+        if (options.loadingContent) {
+            this.loadingContent = options.loadingContent;
+        }
 
         this.levelWorker = new LevelWorker();
 
@@ -127,9 +144,11 @@ export class World extends PIXI.Container {
             }
         }
 
-        if (this.showPlayer) {
-            this.addChild(this.player);
+        if (this.loadingContent) {
+            this.loadingContent.visible = false;
         }
+
+        this.stage.visible = true;
     }
     Update(IM: InputManager) {
         if (!this.grid) {

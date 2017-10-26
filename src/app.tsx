@@ -38,6 +38,14 @@ export default class App extends React.Component<IAppProps> {
             clearBeforeRender: true,
         });
 
+        const loadingContent = new PIXI.Container();
+        const loadingText = new PIXI.Text("loading");
+
+        loadingText.position.x = 300;
+        loadingText.position.y = 300;
+
+        loadingContent.addChild(loadingText);
+
         this.world = new World({
             animate: this.props.animate === undefined ? true : this.props.animate,
             animationDelay: this.props.animationDelay || 7,
@@ -49,6 +57,7 @@ export default class App extends React.Component<IAppProps> {
             height: 50,
             xPosition: 75,
             yPosition: 75,
+            loadingContent: loadingContent,
         });
 
         this.camera = new Camera(this.world);
@@ -57,6 +66,8 @@ export default class App extends React.Component<IAppProps> {
         this.camera.target = this.world.player;
         this.camera.Follow(2);
         this.camera.zoom = 0.1;
+
+        this.camera.addChild(loadingContent);
 
         const GC = GamepadController;
         const KC = KeyboardController;
