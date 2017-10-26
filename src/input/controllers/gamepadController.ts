@@ -62,6 +62,7 @@ class GamepadBinding implements IBinding {
 
 export let GamepadController: IController = {
     Type: type,
+    Init: () => { return; },
     GetBinding: (...codes: ICode[]) => {
         return new GamepadBinding(codes);
     },

@@ -23,9 +23,8 @@ export default class App extends React.Component<IAppProps> {
     world: World;
     camera: Camera;
     IM: InputManager;
-    refs: {
-        canvas: HTMLCanvasElement,
-    };
+    canvas: HTMLCanvasElement;
+
     constructor(props: IAppProps) {
         super(props);
     }
@@ -33,7 +32,7 @@ export default class App extends React.Component<IAppProps> {
         this.renderer = new PIXI.WebGLRenderer({
             antialias: true,
             backgroundColor: 0xFFFFFF,
-            view: this.refs.canvas,
+            view: this.canvas,
             clearBeforeRender: true,
         });
 
@@ -99,6 +98,6 @@ export default class App extends React.Component<IAppProps> {
         this.camera.Update();
     }
     render() {
-        return <canvas ref={canvas => this.refs.canvas = canvas}/>;
+        return <canvas ref={canvas => this.canvas = canvas}/>;
     }
 }
