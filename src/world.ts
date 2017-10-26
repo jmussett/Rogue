@@ -4,6 +4,8 @@ import {FieldOfView} from "./fieldOfView";
 import { InputManager } from "./input/inputManager";
 
 import LevelWorker = require("worker-loader!./levelWorker");
+import IRoom from "./IRoom";
+import { random } from "./util";
 
 interface IWorldOptions {
     tileSize?: number;
@@ -39,8 +41,11 @@ export class World extends PIXI.Container {
     created: boolean;
     currentX: number;
     currentY: number;
+    wallWidth: number;
+    mazeWidth: number;
     grid: number[][];
     loadingContent?: PIXI.Container;
+    rooms: IRoom[];
 
     constructor(options: IWorldOptions) {
         super();
@@ -49,6 +54,9 @@ export class World extends PIXI.Container {
         this.showPlayer = options.showPlayer === undefined ? true : options.showPlayer;
 
         this.range = 40;
+
+        this.wallWidth = options.wallWidth || 1;
+        this.mazeWidth = options.mazeWidth || 2;
 
         this.minRange = 2;
         this.maxRange = 50;
@@ -86,9 +94,32 @@ export class World extends PIXI.Container {
 
         this.levelWorker = new LevelWorker();
 
-        this.levelWorker.onmessage = this.RenderStep.bind(this);
+        this.levelWorker.onmessage = (e) => {
+            switch (e.data.message) {
+                case "step":
+                    this.grid = e.data.grid;
+
+                    if (options.animate) {
+                        this.RenderMap(e.data.grid);
+                    }
+
+                    break;
+                case "complete":
+                    this.levelWorker.postMessage({message: "rooms"});
+
+                    break;
+                case "rooms":
+                    this.rooms = e.data.rooms;
+
+                    this.RenderEnemies(this.rooms);
+                    this.RenderMap(this.grid);
+
+                    break;
+            }
+        };
+
         this.levelWorker.postMessage({
-            step: "generate",
+            message: "generate",
             options: {
                 animate: options.animate || false,
                 animationDelay: options.animationDelay || 10,
@@ -101,11 +132,39 @@ export class World extends PIXI.Container {
             },
         });
     }
-    RenderStep(e: { data: number[][]}) {
-        this.grid = e.data;
+    RenderEnemies(rooms: IRoom[]) {
+        const enemyGraphics = new PIXI.Graphics();
+        enemyGraphics.beginFill(0xFF0000);
+        enemyGraphics.lineStyle(1, 0xFFFFFF);
+        enemyGraphics.drawRect(0, 0, 40, 40);
+        enemyGraphics.endFill();
 
+        const enemyTexture = enemyGraphics.generateCanvasTexture();
+
+        for (const room of rooms) {
+
+            for (let i = 0; i < 10; i++) {
+                const enemy = new PIXI.Sprite(enemyTexture);
+
+                const roomXPosition = room.x * (this.wallWidth + this.mazeWidth) + this.wallWidth;
+                const roomYPosition = room.y * (this.wallWidth + this.mazeWidth) + this.wallWidth;
+
+                const roomXBorderPosition = room.xBorder * (this.wallWidth + this.mazeWidth) - this.wallWidth;
+                const roomYBorderPosition = room.yBorder * (this.wallWidth + this.mazeWidth) - this.wallWidth;
+
+                enemy.position.x = random(roomXPosition * this.tileSize, roomXBorderPosition * this.tileSize);
+                enemy.position.y = random(roomYPosition * this.tileSize, roomYBorderPosition * this.tileSize);
+
+                this.stage.addChildAt(enemy, 0);
+            }
+        }
+
+        this.stage.visible = true;
+        this.loadingContent.visible = false;
+    }
+    RenderMap(grid: number[][]) {
         if (this.created) {
-            this.fov.UpdateFOV(e.data);
+            this.fov.UpdateFOV(grid);
 
             for (let i = 0; i < this.fov.lightMap.length; i++) {
                 for (let j = 0; j < this.fov.lightMap[i].length; j++) {
@@ -116,7 +175,7 @@ export class World extends PIXI.Container {
             return;
         }
 
-        this.fov.CreateFOV(e.data);
+        this.fov.CreateFOV(grid);
 
         this.created = true;
 

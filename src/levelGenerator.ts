@@ -1,8 +1,6 @@
 import * as seedrandom from "seedrandom";
-
-const random = (min: number, max: number) => {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-};
+import IRoom from "./IRoom";
+import { random } from "./util";
 
 interface ILevelGeneratorOptions {
     width: number;
@@ -23,11 +21,6 @@ interface ILevelGeneratorOptions {
 interface INode {
     x: number;
     y: number;
-}
-
-interface IRoom extends INode {
-    xBorder: number;
-    yBorder: number;
 }
 
 export class LevelGenerator {
@@ -104,6 +97,8 @@ export class LevelGenerator {
         this.RemoveArtifacts();
 
         this.FinalFrame();
+
+        console.log("Map generation complete.");
     }
     UpdateFrame() {
         if (this.updateFrame && this.animate) {

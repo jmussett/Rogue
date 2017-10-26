@@ -1,5 +1,7 @@
 import * as PIXI from "pixi.js";
 import * as React from "react";
+import * as seedrandom from "seedrandom";
+
 import {InputManager} from "./input/inputManager";
 import {GamepadController} from "./input/controllers/gamepadController";
 import {KeyboardController} from "./input/controllers/keyboardController";
@@ -30,6 +32,8 @@ export default class App extends React.Component<IAppProps> {
     }
     componentDidMount() {
         PIXI.utils.skipHello();
+
+        seedrandom(this.props.seed, { global: true });
 
         this.renderer = new PIXI.WebGLRenderer({
             antialias: true,

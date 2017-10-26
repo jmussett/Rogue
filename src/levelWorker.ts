@@ -2,11 +2,29 @@ import {LevelGenerator} from "./levelGenerator";
 
 const worker: Worker = self as any;
 
+let lg: LevelGenerator;
+
 worker.onmessage = (e) => {
-    if (e.data.step === "generate") {
-        const lg = new LevelGenerator(e.data.options);
-        lg.Generate((grid: number[][]) => {
-            worker.postMessage(grid);
-        });
+    switch (e.data.message) {
+        case "generate":
+            lg = new LevelGenerator(e.data.options);
+            lg.Generate((grid: number[][]) => {
+                worker.postMessage({
+                    message: "step",
+                    grid: grid,
+                });
+            });
+
+            worker.postMessage({
+                message: "complete",
+            });
+
+            break;
+        case "rooms":
+            worker.postMessage({
+                message: "rooms",
+                rooms: lg.rooms,
+            });
+            break;
     }
 };
