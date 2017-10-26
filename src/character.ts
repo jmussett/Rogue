@@ -29,18 +29,18 @@ interface ICell {
     yBorder: number;
 }
 
-interface IPlayerOptions {
+interface ICharacterOptions {
     tileSize: number;
 }
 
-export class Player extends PIXI.Graphics {
+export class Character extends PIXI.Graphics {
     acceleration: number;
     yVelocity: number;
     xVelocity: number;
     friction: number;
     size: number;
 
-    constructor(options: IPlayerOptions) {
+    constructor(options: ICharacterOptions) {
         super();
         this.position.x = 0;
         this.position.y = 0;

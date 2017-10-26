@@ -1,6 +1,6 @@
 import * as PIXI from "pixi.js";
-import {Player} from "./player";
-import {FieldOfView} from "./fieldOfView";
+import { Character } from "./character";
+import { FieldOfView } from "./fieldOfView";
 import { InputManager } from "./input/inputManager";
 
 import LevelWorker = require("worker-loader!./levelWorker");
@@ -26,7 +26,7 @@ interface IWorldOptions {
 
 export class World extends PIXI.Container {
     stage: PIXI.Container;
-    player: Player;
+    player: Character;
     light: PIXI.particles.ParticleContainer;
     levelWorker: LevelWorker;
     lightIndexes: PIXI.Sprite[][];
@@ -63,7 +63,7 @@ export class World extends PIXI.Container {
         this.currentRange = this.range;
         this.previousTime = Date.now();
 
-        this.player = new Player({
+        this.player = new Character({
             tileSize: options.tileSize,
         });
 
