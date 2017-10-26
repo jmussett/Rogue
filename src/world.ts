@@ -88,7 +88,6 @@ export class World extends PIXI.Container {
         this.grid = e.data;
 
         if (this.created) {
-
             this.fov.UpdateFOV(e.data);
 
             for (let i = 0; i < this.fov.lightMap.length; i++) {
@@ -96,79 +95,83 @@ export class World extends PIXI.Container {
                     this.lightIndexes[i][j].alpha = this.fov.lightMap[i][j].alpha;
                 }
             }
-        } else {
-            this.fov.CreateFOV(e.data);
 
-            this.created = true;
+            return;
+        }
 
-            const ts = this.tileSize;
+        this.fov.CreateFOV(e.data);
 
-            const tileGraphics = new PIXI.Graphics();
-            tileGraphics.beginFill(0x000000);
-            tileGraphics.drawRect(0, 0, ts, ts);
-            tileGraphics.endFill();
+        this.created = true;
 
-            const tileTexture = tileGraphics.generateCanvasTexture();
+        const ts = this.tileSize;
 
-            this.lightIndexes = [];
-            for (let i = 0; i < this.fov.lightMap.length; i++) {
-                this.lightIndexes[i] = [];
-                for (let j = 0; j < this.fov.lightMap[i].length; j++) {
-                    const tile = new PIXI.Sprite(tileTexture);
+        const tileGraphics = new PIXI.Graphics();
+        tileGraphics.beginFill(0x000000);
+        tileGraphics.drawRect(0, 0, ts, ts);
+        tileGraphics.endFill();
 
-                    tile.position.x = i * ts;
-                    tile.position.y = j * ts;
-                    tile.alpha = this.fov.lightMap[i][j].alpha;
+        const tileTexture = tileGraphics.generateCanvasTexture();
 
-                    this.lightIndexes[i][j] = tile;
-                    this.light.addChild(tile);
-                }
+        this.lightIndexes = [];
+        for (let i = 0; i < this.fov.lightMap.length; i++) {
+            this.lightIndexes[i] = [];
+            for (let j = 0; j < this.fov.lightMap[i].length; j++) {
+                const tile = new PIXI.Sprite(tileTexture);
+
+                tile.position.x = i * ts;
+                tile.position.y = j * ts;
+                tile.alpha = this.fov.lightMap[i][j].alpha;
+
+                this.lightIndexes[i][j] = tile;
+                this.light.addChild(tile);
             }
+        }
 
-            if (this.showPlayer) {
-                this.addChild(this.player);
-            }
+        if (this.showPlayer) {
+            this.addChild(this.player);
         }
     }
     Update(IM: InputManager) {
-        if (this.grid) {
-            const dy = IM.Action("Vertical");
-            const dx = IM.Action("Horizontal");
+        if (!this.grid) {
+            return;
+        }
 
-            if (this.showPlayer) {
-                this.player.Move(dx, dy);
-                this.player.DetectCollisions(this);
-            }
+        const dy = IM.Action("Vertical");
+        const dx = IM.Action("Horizontal");
 
-            const rangeChanged = this.currentRange !== this.range;
-            const latestTime = Date.now();
+        if (this.showPlayer) {
+            this.player.Move(dx, dy);
+            this.player.DetectCollisions(this);
+        }
 
-            const timeDiff = latestTime - this.previousTime;
+        const rangeChanged = this.currentRange !== this.range;
+        const latestTime = Date.now();
 
-            if (timeDiff >= 100) {
-                this.previousTime = latestTime;
+        const timeDiff = latestTime - this.previousTime;
 
-                if (rangeChanged && this.range <= this.maxRange && this.range >= this.minRange) {
-                    this.currentRange = this.range;
-                } else {
-                    this.range = this.currentRange;
-                }
+        if (timeDiff >= 100) {
+            this.previousTime = latestTime;
+
+            if (rangeChanged && this.range <= this.maxRange && this.range >= this.minRange) {
+                this.currentRange = this.range;
             } else {
                 this.range = this.currentRange;
             }
+        } else {
+            this.range = this.currentRange;
+        }
 
-            const tileX = this.player.TileX(this.tileSize);
-            const tileY = this.player.TileY(this.tileSize);
+        const tileX = this.player.TileX(this.tileSize);
+        const tileY = this.player.TileY(this.tileSize);
 
-            if ((this.currentX !== tileX || this.currentY !== tileY) || rangeChanged)  {
-                this.currentX = tileX;
-                this.currentY = tileY;
-                this.fov.Update(tileX, tileY, this.currentRange);
+        if ((this.currentX !== tileX || this.currentY !== tileY) || rangeChanged)  {
+            this.currentX = tileX;
+            this.currentY = tileY;
+            this.fov.Update(tileX, tileY, this.currentRange);
 
-                for (let i = 0; i < this.fov.lightMap.length; i++) {
-                    for (let j = 0; j < this.fov.lightMap[i].length; j++) {
-                        this.lightIndexes[i][j].alpha = this.fov.lightMap[i][j].alpha;
-                    }
+            for (let i = 0; i < this.fov.lightMap.length; i++) {
+                for (let j = 0; j < this.fov.lightMap[i].length; j++) {
+                    this.lightIndexes[i][j].alpha = this.fov.lightMap[i][j].alpha;
                 }
             }
         }
