@@ -1,11 +1,13 @@
-function button(code) {
+import ICode from "../ICode";
+
+function button(code: number): ICode {
     return {
         type: "button",
         value: code
     }
 }
 
-function axes(code) {
+function axes(code: number): ICode {
     return {
         type: "axes",
         value: code

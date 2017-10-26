@@ -1,5 +1,16 @@
+interface IFrameManagerOptions {
+	render: Function;
+	update: Function;
+}
+
 export class FrameManager {
-	constructor(options) {
+	render: Function;
+	update: Function;
+	currentTime: number;
+	accumulator: number;
+	timeDiff: number;
+
+	constructor(options: IFrameManagerOptions) {
 		this.render = options.render || new Function();
 		this.update = options.update || new Function();
 
@@ -7,10 +18,11 @@ export class FrameManager {
 		this.accumulator = 0.0;
 		this.timeDiff = 5;
 	}
-	Start() {
+
+	Start(): void {
 		this.currentTime = Date.now();
 
-		function run(fm) {
+		function run(fm: FrameManager) {
 			requestAnimationFrame(run.bind(null, fm));
 
 			fm.Step();
@@ -18,7 +30,7 @@ export class FrameManager {
 
 		run(this);
 	}
-	Step() {
+	Step(): void {
 		let newTime = Date.now();
     	let frameTime = newTime - this.currentTime;
 

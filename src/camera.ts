@@ -1,22 +1,22 @@
-import PIXI from 'pixi.js'
+import * as PIXI from 'pixi.js'
+import { World } from './world';
 
-function scaleView(camera) {
+function scaleView(camera: Camera) {
     camera.view.width = camera.viewport.width / camera.zoom;
     camera.view.height = camera.viewport.height / camera.zoom;
 }
 
-function constrainView(camera) {
-
+function constrainView(camera: Camera) {
     if (!camera.bounded) {
         return;
     }
 
-    let xBound = camera.bounds.x;
-    let yBound = camera.bounds.y;
+    let xBound = camera.getBounds().x;
+    let yBound = camera.getBounds().y;
     let viewWidth = camera.view.width;
     let viewHeight = camera.view.height
-    let boundsWidth = camera.bounds.width;
-    let boundsHeight = camera.bounds.height;
+    let boundsWidth = camera.getBounds().width;
+    let boundsHeight = camera.getBounds().height;
 
     if (camera.view.x < xBound) {
         camera.view.x = xBound;
@@ -26,7 +26,7 @@ function constrainView(camera) {
         camera.view.y = yBound;
     }
 
-    if (camera.view.x + viewWidth > xBound + boundsWidthh) {
+    if (camera.view.x + viewWidth > xBound + boundsWidth) {
         camera.view.x = xBound + boundsWidth - viewWidth;
     }
 
@@ -36,10 +36,21 @@ function constrainView(camera) {
 };
 
 export class Camera extends PIXI.Container {
-	constructor(content) {
-		super();
+	target: PIXI.Container;
+	viewport: PIXI.Rectangle;
+	view: PIXI.Rectangle;
+	bounded: boolean;
+	previousZoom: number;
+	thing: PIXI.Graphics;
+	deadzone: PIXI.Rectangle;
+	circularDeadzone: PIXI.Circle;
+	follow: boolean;
+	followFriction: number;
+	root: World;
+	_zoom: number;
 
-		this.content = content;
+	constructor(content: World) {
+		super();
 
 	    this.root = content;
 
@@ -123,7 +134,7 @@ export class Camera extends PIXI.Container {
 	        -this.view.y * this._zoom
 	    );
 	}
-	DeadZone(...args) {
+	DeadZone(...args: number[]) {
 		this.deadzone = new PIXI.Rectangle(...args);
 
 		this.thing = new PIXI.Graphics();
@@ -135,8 +146,8 @@ export class Camera extends PIXI.Container {
     	this.thing.drawRect(this.deadzone.x, this.deadzone.y, this.deadzone.width, this.deadzone.height);
     	this.thing.endFill();
 	}
-	CircularDeadZone(...args) {
-		this.circularDeadzone = new PIXI.Circle(...args);
+	CircularDeadZone(x?: number, y?: number, radius?: number) {
+		this.circularDeadzone = new PIXI.Circle(x, y, radius);
 
 		this.thing = new PIXI.Graphics();
 		this.addChild(this.thing);
@@ -144,10 +155,10 @@ export class Camera extends PIXI.Container {
 	    this.thing.clear();
 	    this.thing.lineStyle(10, 0xff0000, 1);
     	this.thing.beginFill(0xffFF00, 0.5);
-    	this.thing.drawCircle(...args);
+    	this.thing.drawCircle(x, y, radius);
     	this.thing.endFill();
 	}
-	Follow(followFriction) {
+	Follow(followFriction: number) {
 		this.follow = true;
 		this.followFriction = followFriction;
 	}
@@ -158,8 +169,6 @@ export class Camera extends PIXI.Container {
 		this.viewport.width = value;
         scaleView(this);
         constrainView(this);
-
-        return this.viewport.width;
 	}
 	get height() {
 		return this.viewport.height;
@@ -168,18 +177,14 @@ export class Camera extends PIXI.Container {
 		this.viewport.height = value;
         scaleView(this);
         constrainView(this);
-
-        return this.viewport.height;
 	}
 	get zoom() {
 		return this._zoom;
 	}
-	set zoom(value) {
+	set zoom(value: number) {
 		this._zoom = value;
         this.root.scale.set(value);
         scaleView(this);
         constrainView(this);
-
-        return this._zoom;
 	}
 }

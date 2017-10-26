@@ -1,7 +1,22 @@
+import ICode from "../ICode";
+import IInput from "../IInput";
+import IBinding from "../IBinding";
+import { InputManager } from "../inputManager";
+import IController from "../IController";
+
 let type = "keyboard";
 
-class KeyboardAxesBinding {
-    constructor(negativeCode, positiveCode) {
+class KeyboardAxesBinding implements IBinding {
+    lastNegative: boolean;
+    lastPositive: boolean;
+    negativePressed: boolean;
+    positivePressed: boolean;
+    type: string;
+    negativeCode: ICode;
+    positiveCode: ICode;
+    codes: ICode[];
+
+    constructor(negativeCode: ICode, positiveCode: ICode) {
         this.negativeCode = negativeCode;
         this.positiveCode = positiveCode;
 
@@ -10,12 +25,12 @@ class KeyboardAxesBinding {
         this.negativePressed = false;
         this.positivePressed = false;
 
-        this.Type = type;
+        this.type = type;
     }
-    BindingAction(input) {
+    BindingAction(input: IInput) {
         if (input) {
-            var negativeValue = input.keys[this.negativeCode];
-            var positiveValue = input.keys[this.positiveCode];
+            var negativeValue = input.keys[this.negativeCode.value];
+            var positiveValue = input.keys[this.positiveCode.value];
 
             if (negativeValue === 0) {
                 this.negativePressed = false;
@@ -62,15 +77,17 @@ class KeyboardAxesBinding {
     }
 }
 
-class KeyboardBinding {
-    constructor(codes) {
+class KeyboardBinding implements IBinding {
+    codes: ICode[];
+    type: string;
+    constructor(codes: ICode[]) {
         this.codes = codes;
-        this.Type = type;
+        this.type = type;
     }
-    BindingAction(input) {
+    BindingAction(input: IInput) {
         if (input) {
             var values = this.codes.map((code) => {
-                return input.keys[code];
+                return input.keys[code.value];
             });
             
             var bindingActivated = values.every((value) => {
@@ -84,11 +101,13 @@ class KeyboardBinding {
     }
 }
 
-export let KeyboardController = {
+export let KeyboardController: IController = {
     Type: type,
-    Init: (im) => {
+    Init: (im: InputManager) => {
         im.inputs[type] = {
-            keys: []
+            keys: [],
+            buttons: [],
+            axes: []
         };
         
         window.addEventListener("keydown", (e) => {
@@ -99,13 +118,13 @@ export let KeyboardController = {
             im.inputs[type].keys[e.keyCode] = 0;
         });
     },
-    GetBinding: (...codes) => {
+    GetBinding: (...codes: ICode[]) => {
         return new KeyboardBinding(codes);
     },
-    GetAxesBinding: (negativeCode, positiveCode) => {
+    GetAxesBinding: (negativeCode: ICode, positiveCode: ICode) => {
         return new KeyboardAxesBinding(negativeCode, positiveCode);
     },
-    ScanInputs: (index, currentInput) => {
+    ScanInputs: (index: number, currentInput: IInput) => {
         return currentInput;
     }
 }

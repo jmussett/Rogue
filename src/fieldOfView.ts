@@ -1,6 +1,17 @@
-import {ViewType} from 'viewType'
+import {ViewType} from './viewType'
 
-function newVec (dx, dy) {
+interface IVector {
+	dx: number;
+	dy: number;
+}
+
+interface ILightNode {
+	alpha: number;
+	wall: boolean;
+	seen: boolean;
+}
+
+function newVec (dx: number, dy: number) : IVector {
 	return {
 		dx: dx,
 		dy: dy
@@ -8,9 +19,12 @@ function newVec (dx, dy) {
 };
 
 export class FieldOfView {
-	constructor(viewType) {
-		this.cells = [];
+	viewType: number;
+	fogAlpha: number;
+	directions: IVector[];
+	lightMap: ILightNode[][];
 
+	constructor(viewType: number) {
 		this.viewType = viewType && viewType !== 0 ? 1 : 0;
 
 		this.fogAlpha = 0.8;
@@ -28,7 +42,7 @@ export class FieldOfView {
 			newVec(-1, -1)
 		]
 	}
-	Update(tileX, tileY, range) {
+	Update(tileX: number, tileY: number, range: number) {
 		if (this.viewType === 0) {
 			for (let row in this.lightMap) {
 				for (let collumn in this.lightMap[row]) {
@@ -47,7 +61,9 @@ export class FieldOfView {
 			this.lightMap[tileX][tileY].alpha = 0;
 		}
 	}
-	CastLight(row, start, end, xx, xy, yx, yy, tileX, tileY, range) {
+	CastLight(row: number, start: number, end: number,
+			  xx: number, xy: number, yx: number, yy: number,
+			  tileX: number, tileY: number, range: number) {
 		let newStart = 0;
 	    if (start < end) {
 	        return;
@@ -113,7 +129,7 @@ export class FieldOfView {
 			if (blocked) break;
 		}
 	}
-	CreateFOV(grid) {
+	CreateFOV(grid: number[][]) {
         for (var i = 0; i < grid.length; i++) {
         	this.lightMap[i] = [];
         	for (var j = 0; j < grid[i].length; j++) {
@@ -129,7 +145,7 @@ export class FieldOfView {
         	}
         }
 	}
-	UpdateFOV(grid) {
+	UpdateFOV(grid: number[][]) {
 		if (grid.length === this.lightMap.length) {
 			for (var i = 0; i < grid.length; i++) {
 				if (grid[i].length === this.lightMap[i].length) {

@@ -1,6 +1,8 @@
-import PIXI from 'pixi.js'
+import * as PIXI from 'pixi.js'
+import { World } from './world';
 
-function MergeCells(cells, i, j, xIndex, yIndex, xBorderIndex, yBorderIndex) {
+function MergeCells(cells: ICell[], i: number, j: number,
+                    xIndex: number, yIndex: number, xBorderIndex: number, yBorderIndex: number) {
     
     // Add newly created cell to the queue and remove the merged cells
 
@@ -21,9 +23,25 @@ function MergeCells(cells, i, j, xIndex, yIndex, xBorderIndex, yBorderIndex) {
         cells.splice(j - 1, 1);
     }
 }
+interface ICell {
+    x: number;
+    y: number;
+    xBorder: number;
+    yBorder: number;
+}
+
+interface IPlayerOptions {
+    tileSize: number;
+}
 
 export class Player extends PIXI.Graphics {
-    constructor(options) {
+    acceleration: number;
+    yVelocity: number;
+    xVelocity: number;
+    friction: number;
+    size: number;
+
+    constructor(options: IPlayerOptions) {
         super();
         this.position.x = 0;
         this.position.y = 0;
@@ -34,14 +52,14 @@ export class Player extends PIXI.Graphics {
         this.size = options.tileSize || 50;
         this.UpdateColor(0xFF0000);
     }
-    UpdateColor(color) {
+    UpdateColor(color: number) {
         this.clear();
         this.beginFill(color);
         this.lineStyle(1, 0xFFFFFF);
         this.drawRect(this.x, this.y, this.size, this.size);
         this.endFill();
     }
-    Move (dx, dy) {
+    Move (dx: number, dy: number) {
         this.xVelocity += (dx * this.acceleration);
         this.yVelocity += (dy * this.acceleration);
 
@@ -51,13 +69,13 @@ export class Player extends PIXI.Graphics {
         this.x += this.xVelocity;
         this.y += this.yVelocity;
     }
-    TileX(tileSize) {
+    TileX(tileSize: number) {
         return Math.floor(((this.xBorder + this.x) / 2) / tileSize)
     }
-    TileY(tileSize) {
+    TileY(tileSize: number) {
         return Math.floor(((this.yBorder + this.y) / 2) / tileSize)
     }
-    DetectCollisions(world) {
+    DetectCollisions(world: World) {
         let ts = world.tileSize;
         let grid = world.grid;
 

@@ -1,11 +1,54 @@
-import seedrandom from 'seedrandom'
+import * as seedrandom from 'seedrandom'
 
-let random = (min, max) => {
+let random = (min: number, max: number) => {
 	return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+interface ILevelGeneratorOptions {
+	width: number;
+	height: number;
+	roomAttempts: number;
+	maxSize: number;
+	minSize: number;
+	windyness: number;
+	wallWidth: number;
+	mazeWidth: number;
+	minDoors: number;
+	maxDoors: number;
+	animate: boolean;
+	animationDelay: number;
+	seed: string;
+}
+
+interface INode {
+	x: number;
+	y: number;
+}
+
+interface IRoom extends INode {
+	xBorder: number;
+	yBorder: number;
+}
+
 export class LevelGenerator {
-	 constructor(options) {
+	width: number;
+	height: number;
+	roomAttempts: number;
+	maxSize: number;
+	minSize: number;
+	windyness: number;
+	wallWidth: number;
+	mazeWidth: number;
+	minDoors: number;
+	maxDoors: number;
+	animate: boolean;
+	animationDelay: number;
+	updateFrame: Function;
+	grid: number[][];
+	virtualGrid: number[][];
+	rooms: IRoom[];
+
+	constructor(options: ILevelGeneratorOptions) {
 	 	if (options.seed) {
 		 	seedrandom(options.seed, { global: true});
 	 	}
@@ -23,7 +66,7 @@ export class LevelGenerator {
 		this.animate = options.animate || false;
 		this.animationDelay = options.animationDelay || 10;
 	 }
-	 Generate(updateFrame) {
+	 Generate(updateFrame: Function) {
 	 	this.updateFrame = updateFrame;
 
 	 	this.InitGrid();
@@ -137,16 +180,16 @@ export class LevelGenerator {
 			this.DrawRoom(newRoom)
 	 	}
 	 }
-	 CreateMaze(x, y) {
-		let cells = [];
-		let lastDir;
+	 CreateMaze(x: number, y: number) {
+		let cells: INode[] = [];
+		let lastDir: INode;
 
-		let startingCell = {
+		let startingCell: INode = {
 			x: x,
 			y: y
 		}
 
-		this.DrawCell(startingCell);
+		this.DrawCell(startingCell, 0);
 
 		cells.push(startingCell);
 
@@ -169,7 +212,7 @@ export class LevelGenerator {
 					dir = directions[index];
 				}
 
-				this.DrawCellTo(cell, dir);
+				this.DrawCellTo(cell, dir, 0);
 
 				this.UpdateFrame();
 
@@ -200,7 +243,7 @@ export class LevelGenerator {
 			let numDoors = random(this.minDoors, maxDoorsActual);
 
 			let directions = [];
-			let indexes = [];
+			let indexes: number[] = [];
 
 			while (directions.length < numDoors) {
 				let newRandom = random(0, 3);
@@ -508,7 +551,7 @@ export class LevelGenerator {
 	 		}
 	 	}
 	 }
-	 IsInRoom(x, y) {
+	 IsInRoom(x: number, y: number): boolean {
 	 	if (!this.rooms) return false;
 
 	 	var isInRoom = false;
@@ -521,7 +564,7 @@ export class LevelGenerator {
 
 		return isInRoom;
 	 }
-	 GetDirections(cell, value) {
+	 GetDirections(cell: INode, value: number) {
 	 	let directions = [];
 
 	 	let up = { x: 0, y: -1 };
@@ -544,13 +587,13 @@ export class LevelGenerator {
 
 		return directions;
 	 }
-	 IsDirValid(cell, dir) {
+	 IsDirValid(cell: INode, dir: INode) {
 	 	return cell.x + dir.x >= 0 
 	 		&& cell.y + dir.y >= 0
 	 		&& cell.x + dir.x < this.width
 	 		&& cell.y + dir.y < this.height;
 	 }
-	 CellWalls(cell, value) {
+	 CellWalls(cell: INode, value: number) {
 	 	let x = this.wallWidth + cell.x * (this.wallWidth + this.mazeWidth);
 	 	let y = this.wallWidth + cell.y * (this.wallWidth + this.mazeWidth);
 
@@ -574,7 +617,7 @@ export class LevelGenerator {
 
 	 	return walls;
 	 }
-	 DrawRoom(room) {
+	 DrawRoom(room: IRoom) {
 	 	let x = this.wallWidth + room.x * (this.wallWidth + this.mazeWidth);
 	 	let y = this.wallWidth + room.y * (this.wallWidth + this.mazeWidth);
 
@@ -594,7 +637,7 @@ export class LevelGenerator {
 			}
 		}
 	 }
-	 DrawCell(cell, value) {
+	 DrawCell(cell: INode, value: number) {
 	 	let x = this.wallWidth + cell.x * (this.wallWidth + this.mazeWidth);
 	 	let y = this.wallWidth + cell.y * (this.wallWidth + this.mazeWidth);
 
@@ -603,13 +646,13 @@ export class LevelGenerator {
 
 	 	for (let ix = x; ix < xBorder; ix++) {
 			for (let iy = y; iy < yBorder; iy++) {
-				this.grid[ix][iy] = value || 0;
+				this.grid[ix][iy] = value;
 			}
 		}
 
-		this.virtualGrid[cell.x][cell.y] = value || 0;
+		this.virtualGrid[cell.x][cell.y] = value;
 	 }
-	 DrawWallTo(cell, dir, value) {
+	 DrawWallTo(cell: INode, dir: INode, value: number) {
 	 	let cellXPosition = this.wallWidth + cell.x * (this.wallWidth + this.mazeWidth);
 	 	let cellYPosition = this.wallWidth + cell.y * (this.wallWidth + this.mazeWidth);
 
@@ -618,11 +661,11 @@ export class LevelGenerator {
 
  		for (let x = gapStartX; x < gapStartX + (Math.abs(dir.x) * this.wallWidth) + (Math.abs(dir.y) * this.mazeWidth); x++) {
  			for (let y = gapStartY; y < gapStartY + (Math.abs(dir.y) * this.wallWidth) + (Math.abs(dir.x) * this.mazeWidth); y++) {
- 				this.grid[x][y] = value || 0;
+ 				this.grid[x][y] = value;
  			}
  		}
 	 }
-	 DrawCellTo(cell, dir, value) {
+	 DrawCellTo(cell: INode, dir: INode, value: number) {
 	 	this.DrawWallTo(cell, dir, value);
 
 	 	this.DrawCell({
@@ -630,7 +673,7 @@ export class LevelGenerator {
 	 		y: cell.y + dir.y
 	 	}, value);
 	 }
-	 DrawCellFrom(cell, dir, value) {
+	 DrawCellFrom(cell: INode, dir: INode, value: number) {
 	 	this.DrawWallTo(cell, dir, value);
 
 	 	this.DrawCell(cell, value);

@@ -1,10 +1,45 @@
-import PIXI from 'pixi.js'
-import {Player} from 'player'
-import {FieldOfView} from 'fieldOfView'
-import LevelWorker from 'worker!./levelWorker'
+import * as PIXI from 'pixi.js'
+import {Player} from './player'
+import {FieldOfView} from './fieldOfView'
+import { InputManager } from './input/inputManager';
+
+import LevelWorker = require('worker-loader!./levelWorker');
+
+interface WorldOptions {
+    tileSize?: number;
+    showPlayer?: boolean;
+    xPosition?: number;
+    yPosition?: number;
+    showFOV?: boolean;
+    animate?: boolean;
+    animationDelay?: number;
+    seed?: string;
+    width?: number;
+    height?: number;
+    wallWidth?: number;
+    mazeWidth?: number;
+    roomAttempts?: number;
+}
 
 export class World extends PIXI.Container {
-    constructor(options) {
+    tileSize: number;
+    showPlayer: boolean;
+    player: Player;
+    light: PIXI.particles.ParticleContainer
+    fov: FieldOfView;
+    range: number;
+    minRange: number;
+    maxRange: number;
+    currentRange: number;
+    previousTime: number;
+    levelWorker: LevelWorker;
+    created: boolean;
+    currentX: number;
+    currentY: number;
+    lightIndexes: PIXI.Sprite[][];
+    grid: number[][]
+
+    constructor(options: WorldOptions) {
         super();
 
         this.tileSize = options.tileSize || 50;
@@ -17,7 +52,7 @@ export class World extends PIXI.Container {
         this.player.x = options.xPosition * this.tileSize;
         this.player.y = options.yPosition * this.tileSize;
 
-        this.light = new PIXI.ParticleContainer(1500000, {
+        this.light = new PIXI.particles.ParticleContainer(1500000, {
             alpha: true
         });
 
@@ -53,7 +88,7 @@ export class World extends PIXI.Container {
             }
         });
     }
-    RenderStep(e) {
+    RenderStep(e: { data: number[][]}) {
         this.grid = e.data;
 
         if (this.created) {
@@ -77,7 +112,7 @@ export class World extends PIXI.Container {
             tileGraphics.drawRect(0, 0, ts, ts);
             tileGraphics.endFill();
 
-            let tileTexture = tileGraphics.generateTexture();
+            let tileTexture = tileGraphics.generateCanvasTexture();
 
             this.lightIndexes = [];
             for (var i = 0; i < this.fov.lightMap.length; i++) {
@@ -95,7 +130,7 @@ export class World extends PIXI.Container {
             }
         }
     }
-    Update(IM) {
+    Update(IM: InputManager) {
         if (this.grid) {
             let dy = IM.Action('Vertical');
             let dx = IM.Action('Horizontal');

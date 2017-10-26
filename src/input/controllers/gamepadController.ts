@@ -1,6 +1,11 @@
+import ICode from "../ICode";
+import IInput from "../IInput";
+import IBinding from "../IBinding";
+import IController from "../IController";
+
 let type = "gamepad";
 
-function applyDeadZone(value, deadZone) {
+function applyDeadZone(value: number, deadZone: number) {
     if (value >= deadZone) {
         return value;
     } else if (value <= -deadZone) {
@@ -10,23 +15,20 @@ function applyDeadZone(value, deadZone) {
     return 0;
 } 
 
-class GamepadBinding {
-    constructor(codes) {
+class GamepadBinding implements IBinding {
+    codes: ICode[];
+    type: string;
+    constructor(codes: ICode[]) {
         this.codes = codes;
-        this.Type = type;
+        this.type = type;
     }
-    BindingAction(input, deadZone) {
+    BindingAction(input: IInput, deadZone: number) {
         if (input) {
-            
             var values = this.codes.map((code) => {
                 if (code.type === "button") {
                     var inputResult = input.buttons[code.value];
                     
-                    if (typeof(inputResult) === "object") {
-                        return applyDeadZone(inputResult.value, deadZone);
-                    } else {
-                        return applyDeadZone(inputResult, deadZone);
-                    }
+                    return applyDeadZone(inputResult.value, deadZone);
                 } else {
                     return applyDeadZone(input.axes[code.value], deadZone);
                 }
@@ -58,13 +60,19 @@ class GamepadBinding {
     }
 }
 
-export let GamepadController = {
+export let GamepadController: IController = {
     Type: type,
     Init: () => {},
-    GetBinding: (...codes) => {
+    GetBinding: (...codes: ICode[]) => {
         return new GamepadBinding(codes);
     },
-    ScanInputs: (index) => {
-        return navigator.getGamepads()[index];
+    ScanInputs: (index: number, currentInput?: IInput) => {
+        var gamepad = navigator.getGamepads()[index];
+
+        return {
+            keys: [],
+            buttons: gamepad.buttons,
+            axes: gamepad.axes
+        }
     }
 }

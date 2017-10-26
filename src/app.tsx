@@ -1,33 +1,49 @@
-import PIXI from 'pixi.js'
-import {InputManager} from 'input/inputManager'
-import {GamepadController} from 'input/controllers/gamepadController'
-import {KeyboardController} from 'input/controllers/keyboardController'
-import {GamepadCode} from 'input/codes/gamepadCode'
-import {KeyCode} from 'input/codes/keyCode'
-import {World} from 'world'
-import {Camera} from 'camera'
-import {FrameManager} from 'frameManager'
+import * as PIXI from 'pixi.js'
+import * as React from "react"
+import {InputManager} from './input/inputManager'
+import {GamepadController} from './input/controllers/gamepadController'
+import {KeyboardController} from './input/controllers/keyboardController'
+import {GamepadCode} from './input/codes/gamepadCode'
+import {KeyCode} from './input/codes/keyCode'
+import {World} from './world'
+import {Camera} from './camera'
+import {FrameManager} from './frameManager'
 
-export class App {
-	activate(model) {
-		this.model = model;
+interface IAppProps {
+	animate?: boolean,
+	animationDelay?: number,
+	showPlayer?: boolean,
+	showFOV?: boolean,
+	tileSize?: number,
+	seed?: string
+}
+
+export default class App extends React.Component<IAppProps>{
+	renderer: PIXI.WebGLRenderer;
+	world: World;
+	camera: Camera;
+	IM: InputManager;
+	refs: {
+		canvas: HTMLCanvasElement
 	}
-	attached() {
-		PIXI.utils._saidHello = true;
-
-		this.renderer = new PIXI.WebGLRenderer(this.content.offsetWidth, this.content.offsetHeight, {
-		    antialias: true
+	constructor(props: IAppProps) {
+		super(props);
+	}
+	componentDidMount() {
+		this.renderer = new PIXI.WebGLRenderer({
+			antialias: true,
+			backgroundColor: 0xFFFFFF,
+			view: this.refs.canvas,
+			clearBeforeRender: true
 		});
 
-		this.renderer.backgroundColor = 0xFFFFFF;
-
 		this.world = new World({
-			animate: this.model.animate == undefined ? true : this.model.animate,
-			animationDelay: this.model.animationDelay || 7,
-			showPlayer: this.model.showPlayer || false,
-			showFOV: this.model.showFOV || false,
-			tileSize: this.model.tileSize || 30,
-			seed: this.model.seed,
+			animate: this.props.animate == undefined ? true : this.props.animate,
+			animationDelay: this.props.animationDelay || 7,
+			showPlayer: this.props.showPlayer || false,
+			showFOV: this.props.showFOV || false,
+			tileSize: this.props.tileSize || 30,
+			seed: this.props.seed,
 			width: 50,
 			height: 50,
 			xPosition: 75,
@@ -56,16 +72,14 @@ export class App {
 		this.IM.RegisterAction('Horizontal', GC.GetBinding(GamepadCode.Axes.LH), KC.GetAxesBinding(KeyCode.A, KeyCode.D));
 		this.IM.RegisterAction('ActionAB', GC.GetBinding(GamepadCode.Axes.RV, GamepadCode.Axes.LV), KC.GetBinding(KeyCode.X, KeyCode.Z));
 
-		this.frameManager = new FrameManager({
-			update: this.Update.bind(this),
+		let frameManager = new FrameManager({
+			update: this.update.bind(this),
 			render: this.renderer.render.bind(this.renderer, this.camera)
 		});
 
-		this.frameManager.Start();
-
-		this.content.appendChild(this.renderer.view);
+		frameManager.Start();
 	}
-	Update() {
+	update() {
 		//this.IM.ScanInputs(0);
 
 	    // if (this.IM.Action('ActionA') === 1) {
@@ -81,6 +95,9 @@ export class App {
 	    // }
 
 	    this.world.Update(this.IM);
-	    this.camera.Update();
+		this.camera.Update();
+	}
+	render () {
+		return <canvas ref="canvas"></canvas>;
 	}
 }
