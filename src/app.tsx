@@ -29,6 +29,8 @@ export default class App extends React.Component<IAppProps> {
         super(props);
     }
     componentDidMount() {
+        PIXI.utils.skipHello();
+
         this.renderer = new PIXI.WebGLRenderer({
             antialias: true,
             backgroundColor: 0xFFFFFF,
