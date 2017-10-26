@@ -1,16 +1,15 @@
-import * as PIXI from 'pixi.js'
-import { World } from './world';
+import * as PIXI from "pixi.js";
+import { World } from "./world";
 
 function MergeCells(cells: ICell[], i: number, j: number,
                     xIndex: number, yIndex: number, xBorderIndex: number, yBorderIndex: number) {
-    
     // Add newly created cell to the queue and remove the merged cells
 
     cells.push({
         x: cells[xIndex].x,
         y: cells[yIndex].y,
         xBorder: cells[xBorderIndex].xBorder,
-        yBorder: cells[yBorderIndex].yBorder
+        yBorder: cells[yBorderIndex].yBorder,
     });
 
     cells.splice(i, 1);
@@ -59,7 +58,7 @@ export class Player extends PIXI.Graphics {
         this.drawRect(this.x, this.y, this.size, this.size);
         this.endFill();
     }
-    Move (dx: number, dy: number) {
+    Move(dx: number, dy: number) {
         this.xVelocity += (dx * this.acceleration);
         this.yVelocity += (dy * this.acceleration);
 
@@ -70,33 +69,33 @@ export class Player extends PIXI.Graphics {
         this.y += this.yVelocity;
     }
     TileX(tileSize: number) {
-        return Math.floor(((this.xBorder + this.x) / 2) / tileSize)
+        return Math.floor(((this.xBorder + this.x) / 2) / tileSize);
     }
     TileY(tileSize: number) {
-        return Math.floor(((this.yBorder + this.y) / 2) / tileSize)
+        return Math.floor(((this.yBorder + this.y) / 2) / tileSize);
     }
     DetectCollisions(world: World) {
-        let ts = world.tileSize;
-        let grid = world.grid;
+        const ts = world.tileSize;
+        const grid = world.grid;
 
-        let xMin = Math.floor(this.x / ts);
-        let xMax = Math.floor(this.xBorder / ts);
+        const xMin = Math.floor(this.x / ts);
+        const xMax = Math.floor(this.xBorder / ts);
 
-        let yMin = Math.floor(this.y / ts);
-        let yMax = Math.floor(this.yBorder / ts);
+        const yMin = Math.floor(this.y / ts);
+        const yMax = Math.floor(this.yBorder / ts);
 
-        let cells = [];
+        const cells = [];
 
         // Retrieve surrouding cells
 
         for (let i = xMin; i <= xMax; i++) {
-            for(let j = yMin; j <= yMax; j++) {
+            for (let j = yMin; j <= yMax; j++) {
                 if (grid[i] && grid[i][j] === 1) {
                     cells.push({
                         x: i * ts,
                         y: j * ts,
                         xBorder: (i * ts) + ts,
-                        yBorder: (j * ts) + ts
+                        yBorder: (j * ts) + ts,
                     });
                 }
             }
@@ -117,10 +116,10 @@ export class Player extends PIXI.Graphics {
                         continue;
                     }
 
-                    let xEquals = cells[i].x === cells[j].x;
-                    let yEquals = cells[i].y === cells[j].y;
-                    let xBorderEquals = cells[i].xBorder === cells[j].xBorder;
-                    let yBorderEquals = cells[i].yBorder === cells[j].yBorder;
+                    const xEquals = cells[i].x === cells[j].x;
+                    const yEquals = cells[i].y === cells[j].y;
+                    const xBorderEquals = cells[i].xBorder === cells[j].xBorder;
+                    const yBorderEquals = cells[i].yBorder === cells[j].yBorder;
 
                     // Merge cells together as long as the resulting cell is a rectangle
 
@@ -155,11 +154,11 @@ export class Player extends PIXI.Graphics {
             }
         }
 
-        for (let i = 0; i < cells.length; i++) {
-            let itemX = cells[i].x;
-            let itemY = cells[i].y;
-            let itemXBorder = cells[i].xBorder;
-            let itemYBorder = cells[i].yBorder;
+        for (const cell of cells) {
+            const itemX = cell.x;
+            const itemY = cell.y;
+            const itemXBorder = cell.xBorder;
+            const itemYBorder = cell.yBorder;
 
             // Collision Detection: check if items are colliding
 
@@ -225,13 +224,13 @@ export class Player extends PIXI.Graphics {
     get x() {
         return this.position.x;
     }
-    set x(value) {
+    set x(value: number) {
         this.position.x = value;
     }
     get y() {
         return this.position.y;
     }
-    set y(value) {
+    set y(value: number) {
         this.position.y = value;
     }
     get xBorder() {

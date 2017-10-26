@@ -3,15 +3,15 @@ import ICode from "../ICode";
 function button(code: number): ICode {
     return {
         type: "button",
-        value: code
-    }
+        value: code,
+    };
 }
 
 function axes(code: number): ICode {
     return {
         type: "axes",
-        value: code
-    }
+        value: code,
+    };
 }
 
 export let GamepadCode = {
@@ -32,12 +32,12 @@ export let GamepadCode = {
         Down: button(13),
         Left: button(14),
         Right: button(15),
-        Home: button(16)
+        Home: button(16),
     },
     Axes: {
         LH: axes(0),
         LV: axes(1),
         RH: axes(2),
-        RV: axes(3)
-    }
-}
+        RV: axes(3),
+    },
+};

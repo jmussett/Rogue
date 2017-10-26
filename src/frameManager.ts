@@ -1,49 +1,49 @@
 interface IFrameManagerOptions {
-	render: Function;
-	update: Function;
+    render: () => void;
+    update: () => void;
 }
 
 export class FrameManager {
-	render: Function;
-	update: Function;
-	currentTime: number;
-	accumulator: number;
-	timeDiff: number;
+    render: () => void;
+    update: () => void;
+    currentTime: number;
+    accumulator: number;
+    timeDiff: number;
 
-	constructor(options: IFrameManagerOptions) {
-		this.render = options.render || new Function();
-		this.update = options.update || new Function();
+    constructor(options: IFrameManagerOptions) {
+        this.render = options.render;
+        this.update = options.update;
 
-		this.currentTime = Date.now();
-		this.accumulator = 0.0;
-		this.timeDiff = 5;
-	}
+        this.currentTime = Date.now();
+        this.accumulator = 0.0;
+        this.timeDiff = 5;
+    }
 
-	Start(): void {
-		this.currentTime = Date.now();
+    Start(): void {
+        this.currentTime = Date.now();
 
-		function run(fm: FrameManager) {
-			requestAnimationFrame(run.bind(null, fm));
+        function run(fm: FrameManager) {
+            requestAnimationFrame(run.bind(null, fm));
 
-			fm.Step();
-		}
+            fm.Step();
+        }
 
-		run(this);
-	}
-	Step(): void {
-		let newTime = Date.now();
-    	let frameTime = newTime - this.currentTime;
+        run(this);
+    }
+    Step(): void {
+        const newTime = Date.now();
+        const frameTime = newTime - this.currentTime;
 
-    	this.currentTime = newTime;
-    	this.accumulator += frameTime;
+        this.currentTime = newTime;
+        this.accumulator += frameTime;
 
-    	while (this.accumulator >= this.timeDiff)
-	    {
-	    	this.update();
-	    	this.accumulator -= this.timeDiff;
-	    }
+        while (this.accumulator >= this.timeDiff) {
+            this.update();
+            this.accumulator -= this.timeDiff;
+        }
 
-	    this.update();
-	    this.render();
-	}
+        this.update();
+
+        this.render();
+    }
 }

@@ -1,11 +1,11 @@
-import * as PIXI from 'pixi.js'
-import {Player} from './player'
-import {FieldOfView} from './fieldOfView'
-import { InputManager } from './input/inputManager';
+import * as PIXI from "pixi.js";
+import {Player} from "./player";
+import {FieldOfView} from "./fieldOfView";
+import { InputManager } from "./input/inputManager";
 
-import LevelWorker = require('worker-loader!./levelWorker');
+import LevelWorker = require("worker-loader!./levelWorker");
 
-interface WorldOptions {
+interface IWorldOptions {
     tileSize?: number;
     showPlayer?: boolean;
     xPosition?: number;
@@ -25,7 +25,7 @@ export class World extends PIXI.Container {
     tileSize: number;
     showPlayer: boolean;
     player: Player;
-    light: PIXI.particles.ParticleContainer
+    light: PIXI.particles.ParticleContainer;
     fov: FieldOfView;
     range: number;
     minRange: number;
@@ -37,23 +37,23 @@ export class World extends PIXI.Container {
     currentX: number;
     currentY: number;
     lightIndexes: PIXI.Sprite[][];
-    grid: number[][]
+    grid: number[][];
 
-    constructor(options: WorldOptions) {
+    constructor(options: IWorldOptions) {
         super();
 
         this.tileSize = options.tileSize || 50;
-        this.showPlayer = options.showPlayer == undefined ? true : options.showPlayer;
+        this.showPlayer = options.showPlayer === undefined ? true : options.showPlayer;
 
         this.player = new Player({
-            tileSize: options.tileSize
+            tileSize: options.tileSize,
         });
 
         this.player.x = options.xPosition * this.tileSize;
         this.player.y = options.yPosition * this.tileSize;
 
         this.light = new PIXI.particles.ParticleContainer(1500000, {
-            alpha: true
+            alpha: true,
         });
 
         this.fov = new FieldOfView(options.showFOV ? 0 : 1);
@@ -75,17 +75,17 @@ export class World extends PIXI.Container {
 
         this.levelWorker.onmessage = this.RenderStep.bind(this);
         this.levelWorker.postMessage({
-            step: 'generate', 
+            step: "generate",
             options: {
                 animate: options.animate || false,
                 animationDelay: options.animationDelay || 10,
                 seed: options.seed,
-                roomAttempts: options.roomAttempts || 200, 
-                width: options.width || 30, 
+                roomAttempts: options.roomAttempts || 200,
+                width: options.width || 30,
                 height: options.height || 30,
                 wallWidth: options.wallWidth || 1,
-                mazeWidth: options.mazeWidth || 2
-            }
+                mazeWidth: options.mazeWidth || 2,
+            },
         });
     }
     RenderStep(e: { data: number[][]}) {
@@ -95,8 +95,8 @@ export class World extends PIXI.Container {
 
             this.fov.UpdateFOV(e.data);
 
-            for (var i = 0; i < this.fov.lightMap.length; i++) {
-                for (var j = 0; j < this.fov.lightMap[i].length; j++) {
+            for (let i = 0; i < this.fov.lightMap.length; i++) {
+                for (let j = 0; j < this.fov.lightMap[i].length; j++) {
                     this.lightIndexes[i][j].alpha = this.fov.lightMap[i][j].alpha;
                 }
             }
@@ -105,20 +105,20 @@ export class World extends PIXI.Container {
 
             this.created = true;
 
-            let ts = this.tileSize;
+            const ts = this.tileSize;
 
-            let tileGraphics = new PIXI.Graphics()
+            const tileGraphics = new PIXI.Graphics();
             tileGraphics.beginFill(0x000000);
             tileGraphics.drawRect(0, 0, ts, ts);
             tileGraphics.endFill();
 
-            let tileTexture = tileGraphics.generateCanvasTexture();
+            const tileTexture = tileGraphics.generateCanvasTexture();
 
             this.lightIndexes = [];
-            for (var i = 0; i < this.fov.lightMap.length; i++) {
+            for (let i = 0; i < this.fov.lightMap.length; i++) {
                 this.lightIndexes[i] = [];
-                for (var j = 0; j < this.fov.lightMap[i].length; j++) {
-                    let tile = new PIXI.Sprite(tileTexture);
+                for (let j = 0; j < this.fov.lightMap[i].length; j++) {
+                    const tile = new PIXI.Sprite(tileTexture);
 
                     tile.position.x = i * ts;
                     tile.position.y = j * ts;
@@ -132,19 +132,19 @@ export class World extends PIXI.Container {
     }
     Update(IM: InputManager) {
         if (this.grid) {
-            let dy = IM.Action('Vertical');
-            let dx = IM.Action('Horizontal');
-            
+            const dy = IM.Action("Vertical");
+            const dx = IM.Action("Horizontal");
+
             if (this.showPlayer) {
                 this.player.Move(dx, dy);
                 this.player.DetectCollisions(this);
             }
 
-            let rangeChanged = this.currentRange != this.range;
-            let latestTime = Date.now();
+            const rangeChanged = this.currentRange !== this.range;
+            const latestTime = Date.now();
 
-            let timeDiff = latestTime - this.previousTime;
-            
+            const timeDiff = latestTime - this.previousTime;
+
             if (timeDiff >= 100) {
                 this.previousTime = latestTime;
 
@@ -157,16 +157,16 @@ export class World extends PIXI.Container {
                 this.range = this.currentRange;
             }
 
-            var tileX = this.player.TileX(this.tileSize);
-            var tileY = this.player.TileY(this.tileSize);
+            const tileX = this.player.TileX(this.tileSize);
+            const tileY = this.player.TileY(this.tileSize);
 
-            if ((this.currentX != tileX || this.currentY != tileY) || rangeChanged)  {
+            if ((this.currentX !== tileX || this.currentY !== tileY) || rangeChanged)  {
                 this.currentX = tileX;
                 this.currentY = tileY;
                 this.fov.Update(tileX, tileY, this.currentRange);
 
-                for (var i = 0; i < this.fov.lightMap.length; i++) {
-                    for (var j = 0; j < this.fov.lightMap[i].length; j++) {
+                for (let i = 0; i < this.fov.lightMap.length; i++) {
+                    for (let j = 0; j < this.fov.lightMap[i].length; j++) {
                         this.lightIndexes[i][j].alpha = this.fov.lightMap[i][j].alpha;
                     }
                 }

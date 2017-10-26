@@ -4,7 +4,7 @@ import IBinding from "../IBinding";
 import { InputManager } from "../inputManager";
 import IController from "../IController";
 
-let type = "keyboard";
+const type = "keyboard";
 
 class KeyboardAxesBinding implements IBinding {
     lastNegative: boolean;
@@ -29,8 +29,8 @@ class KeyboardAxesBinding implements IBinding {
     }
     BindingAction(input: IInput) {
         if (input) {
-            var negativeValue = input.keys[this.negativeCode.value];
-            var positiveValue = input.keys[this.positiveCode.value];
+            const negativeValue = input.keys[this.negativeCode.value];
+            const positiveValue = input.keys[this.positiveCode.value];
 
             if (negativeValue === 0) {
                 this.negativePressed = false;
@@ -72,7 +72,7 @@ class KeyboardAxesBinding implements IBinding {
                 return 0;
             }
         }
-        
+
         return 0;
     }
 }
@@ -86,17 +86,17 @@ class KeyboardBinding implements IBinding {
     }
     BindingAction(input: IInput) {
         if (input) {
-            var values = this.codes.map((code) => {
+            const values = this.codes.map((code) => {
                 return input.keys[code.value];
             });
-            
-            var bindingActivated = values.every((value) => {
+
+            const bindingActivated = values.every((value) => {
                 return value === 1;
             });
-            
+
             return bindingActivated ? 1 : 0;
         }
-        
+
         return 0;
     }
 }
@@ -107,14 +107,14 @@ export let KeyboardController: IController = {
         im.inputs[type] = {
             keys: [],
             buttons: [],
-            axes: []
+            axes: [],
         };
-        
+
         window.addEventListener("keydown", (e) => {
             im.inputs[type].keys[e.keyCode] = 1;
         });
 
-        window.addEventListener('keyup', (e) => {
+        window.addEventListener("keyup", (e) => {
             im.inputs[type].keys[e.keyCode] = 0;
         });
     },
@@ -126,5 +126,5 @@ export let KeyboardController: IController = {
     },
     ScanInputs: (index: number, currentInput: IInput) => {
         return currentInput;
-    }
-}
+    },
+};

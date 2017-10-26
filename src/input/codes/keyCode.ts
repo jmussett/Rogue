@@ -3,8 +3,8 @@ import ICode from "../ICode";
 function key(code: number): ICode {
     return {
         type: "key",
-        value: code
-    }
+        value: code,
+    };
 }
 
 export let KeyCode = {
@@ -105,5 +105,5 @@ export let KeyCode = {
     OpenBracket: key(219),
     BackSlash: key(220),
     CloseBracket: key(221),
-    SingleQuote: key(222)
-}
+    SingleQuote: key(222),
+};
