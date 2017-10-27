@@ -4,6 +4,7 @@ import LightContainer from "./Containers/LightContainer";
 import IRoom from "./IRoom";
 import { random } from "./util";
 import { InputManager } from "./input/inputManager";
+import EnemyContainer from "./Containers/EnemyContainer";
 
 interface IWorldOptions {
     tileSize?: number;
@@ -26,6 +27,7 @@ export class World extends PIXI.Container {
     stage: PIXI.Container;
     player: Character;
     light: LightContainer;
+    enemies: EnemyContainer;
     levelWorker: LevelWorker;
     tileSize: number;
     showPlayer: boolean;
@@ -46,9 +48,11 @@ export class World extends PIXI.Container {
         this.player.y = options.yPosition * this.tileSize;
 
         this.light = new LightContainer({showFOV: options.showFOV, tileSize: options.tileSize});
+        this.enemies = new EnemyContainer({tileSize: options.tileSize});
 
         this.stage = new PIXI.Container();
 
+        this.stage.addChild(this.enemies);
         this.stage.addChild(this.light);
 
         if (this.showPlayer) {
@@ -84,7 +88,7 @@ export class World extends PIXI.Container {
                 case "metadata":
                     const metadata = e.data.metadata;
 
-                    this.RenderEnemies(metadata.rooms, metadata.wallWidth, metadata.mazeWidth);
+                    this.enemies.Render(metadata.rooms, metadata.wallWidth, metadata.mazeWidth);
                     this.light.Render(this.grid);
 
                     this.FinishLoading();
@@ -107,45 +111,8 @@ export class World extends PIXI.Container {
             },
         });
     }
-    FinishLoading() {
-        if (this.loadingContent) {
-            this.loadingContent.visible = false;
-        }
-
-        this.stage.visible = true;
-    }
-    RenderEnemies(rooms: IRoom[], wallWidth: number, mazeWidth: number) {
-        const enemyGraphics = new PIXI.Graphics();
-        enemyGraphics.beginFill(0xFF0000);
-        enemyGraphics.lineStyle(1, 0xFFFFFF);
-        enemyGraphics.drawRect(0, 0, 40, 40);
-        enemyGraphics.endFill();
-
-        const enemyTexture = enemyGraphics.generateCanvasTexture();
-
-        for (const room of rooms) {
-
-            for (let i = 0; i < 10; i++) {
-                const enemy = new Character({texture: enemyTexture});
-
-                const roomXPosition = room.x * (wallWidth + mazeWidth) + wallWidth;
-                const roomYPosition = room.y * (wallWidth + mazeWidth) + wallWidth;
-
-                const roomXBorderPosition = room.xBorder * (wallWidth + mazeWidth) - wallWidth;
-                const roomYBorderPosition = room.yBorder * (wallWidth + mazeWidth) - wallWidth;
-
-                enemy.position.x = random(roomXPosition * this.tileSize, roomXBorderPosition * this.tileSize);
-                enemy.position.y = random(roomYPosition * this.tileSize, roomYBorderPosition * this.tileSize);
-
-                this.stage.addChildAt(enemy, 0);
-            }
-        }
-
-        this.stage.visible = true;
-        this.loadingContent.visible = false;
-    }
     Update(IM: InputManager) {
-        if (!this.grid) {
+        if (!this.grid || !this.stage.visible) {
             return;
         }
 
@@ -161,5 +128,12 @@ export class World extends PIXI.Container {
         const tileY = this.player.TileY(this.tileSize);
 
         this.light.Update(tileX, tileY);
+    }
+    private FinishLoading() {
+        if (this.loadingContent) {
+            this.loadingContent.visible = false;
+        }
+
+        this.stage.visible = true;
     }
 }
