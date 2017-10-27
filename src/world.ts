@@ -71,7 +71,9 @@ export class World extends PIXI.Container {
                     this.grid = e.data.grid;
 
                     if (options.animate) {
-                        this.RenderMap(e.data.grid);
+                        this.light.Render(e.data.grid);
+
+                        this.FinishLoading();
                     }
 
                     break;
@@ -83,7 +85,9 @@ export class World extends PIXI.Container {
                     const metadata = e.data.metadata;
 
                     this.RenderEnemies(metadata.rooms, metadata.wallWidth, metadata.mazeWidth);
-                    this.RenderMap(this.grid);
+                    this.light.Render(this.grid);
+
+                    this.FinishLoading();
 
                     break;
             }
@@ -102,6 +106,13 @@ export class World extends PIXI.Container {
                 mazeWidth: options.mazeWidth || 2,
             },
         });
+    }
+    FinishLoading() {
+        if (this.loadingContent) {
+            this.loadingContent.visible = false;
+        }
+
+        this.stage.visible = true;
     }
     RenderEnemies(rooms: IRoom[], wallWidth: number, mazeWidth: number) {
         const enemyGraphics = new PIXI.Graphics();
@@ -132,15 +143,6 @@ export class World extends PIXI.Container {
 
         this.stage.visible = true;
         this.loadingContent.visible = false;
-    }
-    RenderMap(grid: number[][]) {
-        this.light.Render(grid);
-
-        if (this.loadingContent) {
-            this.loadingContent.visible = false;
-        }
-
-        this.stage.visible = true;
     }
     Update(IM: InputManager) {
         if (!this.grid) {
