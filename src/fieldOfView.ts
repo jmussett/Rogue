@@ -1,5 +1,3 @@
-import {ViewType} from "./viewType";
-
 interface IVector {
     dx: number;
     dy: number;

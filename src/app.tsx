@@ -2,14 +2,14 @@ import * as PIXI from "pixi.js";
 import * as React from "react";
 import * as seedrandom from "seedrandom";
 
-import {InputManager} from "./input/inputManager";
-import {GamepadController} from "./input/controllers/gamepadController";
-import {KeyboardController} from "./input/controllers/keyboardController";
-import {GamepadCode} from "./input/codes/gamepadCode";
-import {KeyCode} from "./input/codes/keyCode";
-import {World} from "./world";
-import {Camera} from "./camera";
-import {FrameManager} from "./frameManager";
+import { InputManager } from "./input/inputManager";
+import { GamepadController } from "./input/controllers/gamepadController";
+import { KeyboardController } from "./input/controllers/keyboardController";
+import { GamepadCode } from "./input/codes/gamepadCode";
+import { KeyCode } from "./input/codes/keyCode";
+import { World } from "./world";
+import { Camera } from "./camera";
+import { FrameManager } from "./Utility/frameManager";
 
 interface IAppProps {
     animate?: boolean;

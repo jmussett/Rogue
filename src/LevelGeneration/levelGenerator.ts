@@ -1,6 +1,6 @@
 import * as seedrandom from "seedrandom";
-import IRoom from "./IRoom";
-import { random } from "./util";
+import IRoom from "../Utility/IRoom";
+import { random } from "../Utility/util";
 
 interface ILevelGeneratorOptions {
     width: number;

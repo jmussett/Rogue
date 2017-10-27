@@ -1,10 +1,10 @@
-import LevelWorker = require("worker-loader!./levelWorker");
-import { Character } from "./character";
+import LevelWorker = require("worker-loader!./LevelGeneration/levelWorker");
+
 import LightContainer from "./Containers/LightContainer";
-import IRoom from "./IRoom";
-import { random } from "./util";
-import { InputManager } from "./input/inputManager";
+
 import EnemyContainer from "./Containers/EnemyContainer";
+import { Character } from "./character";
+import { InputManager } from "./input/inputManager";
 
 interface IWorldOptions {
     tileSize?: number;

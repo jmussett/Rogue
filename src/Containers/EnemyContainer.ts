@@ -1,6 +1,6 @@
 import { Character } from "../character";
-import { random } from "../util";
-import IRoom from "../IRoom";
+import { random } from "../Utility/util";
+import IRoom from "../Utility/IRoom";
 
 interface IEnemyContainerOptions {
     tileSize: number;
