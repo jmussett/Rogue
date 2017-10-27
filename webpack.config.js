@@ -3,7 +3,7 @@ var path = require('path');
 module.exports = {
   devtool: 'inline-source-map',
   entry: [
-      './src/main.tsx'
+      './src/index.tsx'
   ],
   output: {
       path: path.resolve(__dirname, 'public'),
