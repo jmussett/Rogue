@@ -20,10 +20,16 @@ worker.onmessage = (e) => {
             });
 
             break;
-        case "rooms":
+        case "metadata":
             worker.postMessage({
-                message: "rooms",
-                rooms: lg.rooms,
+                message: "metadata",
+                metadata: {
+                    rooms: lg.rooms,
+                    width: lg.width,
+                    height: lg.height,
+                    wallWidth: lg.wallWidth,
+                    mazeWidth: lg.mazeWidth,
+                },
             });
             break;
     }

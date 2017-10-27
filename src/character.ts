@@ -30,10 +30,12 @@ interface ICell {
 }
 
 interface ICharacterOptions {
-    tileSize: number;
+    tileSize?: number;
+    graphics?: PIXI.Graphics;
+    texture?: PIXI.Texture;
 }
 
-export class Character extends PIXI.Graphics {
+export class Character extends PIXI.Sprite {
     acceleration: number;
     yVelocity: number;
     xVelocity: number;
@@ -41,7 +43,29 @@ export class Character extends PIXI.Graphics {
     size: number;
 
     constructor(options: ICharacterOptions) {
-        super();
+
+        let texture = options.texture;
+
+        if (!texture) {
+            let graphics = options.graphics;
+
+            if (!graphics) {
+                graphics = new PIXI.Graphics();
+
+                const size = options.tileSize || 50;
+
+                graphics.clear();
+                graphics.beginFill(0xFF0000);
+                graphics.lineStyle(1, 0xFFFFFF);
+                graphics.drawRect(0, 0, size, size);
+                graphics.endFill();
+            }
+
+            texture = graphics.generateCanvasTexture();
+        }
+
+        super(texture);
+
         this.position.x = 0;
         this.position.y = 0;
         this.acceleration = 0.5;
@@ -49,14 +73,6 @@ export class Character extends PIXI.Graphics {
         this.xVelocity = 0;
         this.friction = 0.9;
         this.size = options.tileSize || 50;
-        this.UpdateColor(0xFF0000);
-    }
-    UpdateColor(color: number) {
-        this.clear();
-        this.beginFill(color);
-        this.lineStyle(1, 0xFFFFFF);
-        this.drawRect(this.x, this.y, this.size, this.size);
-        this.endFill();
     }
     Move(dx: number, dy: number) {
         this.xVelocity += (dx * this.acceleration);

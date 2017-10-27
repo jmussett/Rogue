@@ -1,11 +1,9 @@
-import * as PIXI from "pixi.js";
-import { Character } from "./character";
-import { FieldOfView } from "./fieldOfView";
-import { InputManager } from "./input/inputManager";
-
 import LevelWorker = require("worker-loader!./levelWorker");
+import { Character } from "./character";
+import LightContainer from "./Containers/LightContainer";
 import IRoom from "./IRoom";
 import { random } from "./util";
+import { InputManager } from "./input/inputManager";
 
 interface IWorldOptions {
     tileSize?: number;
@@ -27,41 +25,18 @@ interface IWorldOptions {
 export class World extends PIXI.Container {
     stage: PIXI.Container;
     player: Character;
-    light: PIXI.particles.ParticleContainer;
+    light: LightContainer;
     levelWorker: LevelWorker;
-    lightIndexes: PIXI.Sprite[][];
-    fov: FieldOfView;
     tileSize: number;
     showPlayer: boolean;
-    range: number;
-    minRange: number;
-    maxRange: number;
-    currentRange: number;
-    previousTime: number;
-    created: boolean;
-    currentX: number;
-    currentY: number;
-    wallWidth: number;
-    mazeWidth: number;
     grid: number[][];
     loadingContent?: PIXI.Container;
-    rooms: IRoom[];
 
     constructor(options: IWorldOptions) {
         super();
 
         this.tileSize = options.tileSize || 50;
         this.showPlayer = options.showPlayer === undefined ? true : options.showPlayer;
-
-        this.range = 40;
-
-        this.wallWidth = options.wallWidth || 1;
-        this.mazeWidth = options.mazeWidth || 2;
-
-        this.minRange = 2;
-        this.maxRange = 50;
-        this.currentRange = this.range;
-        this.previousTime = Date.now();
 
         this.player = new Character({
             tileSize: options.tileSize,
@@ -70,11 +45,7 @@ export class World extends PIXI.Container {
         this.player.x = options.xPosition * this.tileSize;
         this.player.y = options.yPosition * this.tileSize;
 
-        this.light = new PIXI.particles.ParticleContainer(1500000, {
-            alpha: true,
-        });
-
-        this.fov = new FieldOfView(options.showFOV ? 0 : 1);
+        this.light = new LightContainer({showFOV: options.showFOV, tileSize: options.tileSize});
 
         this.stage = new PIXI.Container();
 
@@ -105,13 +76,13 @@ export class World extends PIXI.Container {
 
                     break;
                 case "complete":
-                    this.levelWorker.postMessage({message: "rooms"});
+                    this.levelWorker.postMessage({message: "metadata"});
 
                     break;
-                case "rooms":
-                    this.rooms = e.data.rooms;
+                case "metadata":
+                    const metadata = e.data.metadata;
 
-                    this.RenderEnemies(this.rooms);
+                    this.RenderEnemies(metadata.rooms, metadata.wallWidth, metadata.mazeWidth);
                     this.RenderMap(this.grid);
 
                     break;
@@ -132,7 +103,7 @@ export class World extends PIXI.Container {
             },
         });
     }
-    RenderEnemies(rooms: IRoom[]) {
+    RenderEnemies(rooms: IRoom[], wallWidth: number, mazeWidth: number) {
         const enemyGraphics = new PIXI.Graphics();
         enemyGraphics.beginFill(0xFF0000);
         enemyGraphics.lineStyle(1, 0xFFFFFF);
@@ -144,13 +115,13 @@ export class World extends PIXI.Container {
         for (const room of rooms) {
 
             for (let i = 0; i < 10; i++) {
-                const enemy = new PIXI.Sprite(enemyTexture);
+                const enemy = new Character({texture: enemyTexture});
 
-                const roomXPosition = room.x * (this.wallWidth + this.mazeWidth) + this.wallWidth;
-                const roomYPosition = room.y * (this.wallWidth + this.mazeWidth) + this.wallWidth;
+                const roomXPosition = room.x * (wallWidth + mazeWidth) + wallWidth;
+                const roomYPosition = room.y * (wallWidth + mazeWidth) + wallWidth;
 
-                const roomXBorderPosition = room.xBorder * (this.wallWidth + this.mazeWidth) - this.wallWidth;
-                const roomYBorderPosition = room.yBorder * (this.wallWidth + this.mazeWidth) - this.wallWidth;
+                const roomXBorderPosition = room.xBorder * (wallWidth + mazeWidth) - wallWidth;
+                const roomYBorderPosition = room.yBorder * (wallWidth + mazeWidth) - wallWidth;
 
                 enemy.position.x = random(roomXPosition * this.tileSize, roomXBorderPosition * this.tileSize);
                 enemy.position.y = random(roomYPosition * this.tileSize, roomYBorderPosition * this.tileSize);
@@ -163,45 +134,7 @@ export class World extends PIXI.Container {
         this.loadingContent.visible = false;
     }
     RenderMap(grid: number[][]) {
-        if (this.created) {
-            this.fov.UpdateFOV(grid);
-
-            for (let i = 0; i < this.fov.lightMap.length; i++) {
-                for (let j = 0; j < this.fov.lightMap[i].length; j++) {
-                    this.lightIndexes[i][j].alpha = this.fov.lightMap[i][j].alpha;
-                }
-            }
-
-            return;
-        }
-
-        this.fov.CreateFOV(grid);
-
-        this.created = true;
-
-        const ts = this.tileSize;
-
-        const tileGraphics = new PIXI.Graphics();
-        tileGraphics.beginFill(0x000000);
-        tileGraphics.drawRect(0, 0, ts, ts);
-        tileGraphics.endFill();
-
-        const tileTexture = tileGraphics.generateCanvasTexture();
-
-        this.lightIndexes = [];
-        for (let i = 0; i < this.fov.lightMap.length; i++) {
-            this.lightIndexes[i] = [];
-            for (let j = 0; j < this.fov.lightMap[i].length; j++) {
-                const tile = new PIXI.Sprite(tileTexture);
-
-                tile.position.x = i * ts;
-                tile.position.y = j * ts;
-                tile.alpha = this.fov.lightMap[i][j].alpha;
-
-                this.lightIndexes[i][j] = tile;
-                this.light.addChild(tile);
-            }
-        }
+        this.light.Render(grid);
 
         if (this.loadingContent) {
             this.loadingContent.visible = false;
@@ -222,36 +155,9 @@ export class World extends PIXI.Container {
             this.player.DetectCollisions(this);
         }
 
-        const rangeChanged = this.currentRange !== this.range;
-        const latestTime = Date.now();
-
-        const timeDiff = latestTime - this.previousTime;
-
-        if (timeDiff >= 100) {
-            this.previousTime = latestTime;
-
-            if (rangeChanged && this.range <= this.maxRange && this.range >= this.minRange) {
-                this.currentRange = this.range;
-            } else {
-                this.range = this.currentRange;
-            }
-        } else {
-            this.range = this.currentRange;
-        }
-
         const tileX = this.player.TileX(this.tileSize);
         const tileY = this.player.TileY(this.tileSize);
 
-        if ((this.currentX !== tileX || this.currentY !== tileY) || rangeChanged)  {
-            this.currentX = tileX;
-            this.currentY = tileY;
-            this.fov.Update(tileX, tileY, this.currentRange);
-
-            for (let i = 0; i < this.fov.lightMap.length; i++) {
-                for (let j = 0; j < this.fov.lightMap[i].length; j++) {
-                    this.lightIndexes[i][j].alpha = this.fov.lightMap[i][j].alpha;
-                }
-            }
-        }
+        this.light.Update(tileX, tileY);
     }
 }
