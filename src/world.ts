@@ -21,6 +21,7 @@ interface IWorldOptions {
     mazeWidth?: number;
     roomAttempts?: number;
     loadingContent?: PIXI.Container;
+    inputMAnager: InputManager;
 }
 
 export class World extends PIXI.Container {
@@ -33,10 +34,12 @@ export class World extends PIXI.Container {
     showPlayer: boolean;
     grid: number[][];
     loadingContent?: PIXI.Container;
+    inputManager: InputManager;
 
     constructor(options: IWorldOptions) {
         super();
 
+        this.inputManager = options.inputMAnager;
         this.tileSize = options.tileSize || 50;
         this.showPlayer = options.showPlayer === undefined ? true : options.showPlayer;
 
@@ -111,13 +114,13 @@ export class World extends PIXI.Container {
             },
         });
     }
-    Update(IM: InputManager) {
+    Update() {
         if (!this.grid || !this.stage.visible) {
             return;
         }
 
-        const dy = IM.Action("Vertical");
-        const dx = IM.Action("Horizontal");
+        const dy = this.inputManager.Action("Vertical");
+        const dx = this.inputManager.Action("Horizontal");
 
         if (this.showPlayer) {
             this.player.Move(dx, dy);

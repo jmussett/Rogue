@@ -24,7 +24,6 @@ export default class App extends React.Component<IAppProps> {
     renderer: PIXI.WebGLRenderer;
     world: World;
     camera: Camera;
-    IM: InputManager;
     canvas: HTMLCanvasElement;
 
     constructor(props: IAppProps) {
@@ -50,6 +49,21 @@ export default class App extends React.Component<IAppProps> {
 
         loadingContent.addChild(loadingText);
 
+        const GC = GamepadController;
+        const KC = KeyboardController;
+
+        const IM = new InputManager();
+
+        IM.RegisterControllers(GC, KC);
+        IM.RegisterDeadZone(0.2);
+        IM.RegisterAction("ActionA", GC.GetBinding(GamepadCode.Buttons.A), KC.GetBinding(KeyCode.P));
+        IM.RegisterAction("ActionB", GC.GetBinding(GamepadCode.Buttons.B), KC.GetBinding(KeyCode.O));
+        IM.RegisterAction("ActionC", GC.GetBinding(GamepadCode.Buttons.X), KC.GetBinding(KeyCode.X));
+        IM.RegisterAction("ActionD", GC.GetBinding(GamepadCode.Buttons.Y), KC.GetBinding(KeyCode.Z));
+        IM.RegisterAction("Vertical", GC.GetBinding(GamepadCode.Axes.LV), KC.GetAxesBinding(KeyCode.W, KeyCode.S));
+        IM.RegisterAction("Horizontal", GC.GetBinding(GamepadCode.Axes.LH), KC.GetAxesBinding(KeyCode.A, KeyCode.D));
+        IM.RegisterAction("ActionAB", GC.GetBinding(GamepadCode.Axes.RV, GamepadCode.Axes.LV), KC.GetBinding(KeyCode.X, KeyCode.Z));
+
         this.world = new World({
             animate: this.props.animate === undefined ? true : this.props.animate,
             animationDelay: this.props.animationDelay || 7,
@@ -62,6 +76,7 @@ export default class App extends React.Component<IAppProps> {
             xPosition: 75,
             yPosition: 75,
             loadingContent: loadingContent,
+            inputMAnager: IM,
         });
 
         this.camera = new Camera(this.world);
@@ -72,21 +87,6 @@ export default class App extends React.Component<IAppProps> {
         this.camera.zoom = 0.1;
 
         this.camera.addChild(loadingContent);
-
-        const GC = GamepadController;
-        const KC = KeyboardController;
-
-        this.IM = new InputManager();
-
-        this.IM.RegisterControllers(GC, KC);
-        this.IM.RegisterDeadZone(0.2);
-        this.IM.RegisterAction("ActionA", GC.GetBinding(GamepadCode.Buttons.A), KC.GetBinding(KeyCode.P));
-        this.IM.RegisterAction("ActionB", GC.GetBinding(GamepadCode.Buttons.B), KC.GetBinding(KeyCode.O));
-        this.IM.RegisterAction("ActionC", GC.GetBinding(GamepadCode.Buttons.X), KC.GetBinding(KeyCode.X));
-        this.IM.RegisterAction("ActionD", GC.GetBinding(GamepadCode.Buttons.Y), KC.GetBinding(KeyCode.Z));
-        this.IM.RegisterAction("Vertical", GC.GetBinding(GamepadCode.Axes.LV), KC.GetAxesBinding(KeyCode.W, KeyCode.S));
-        this.IM.RegisterAction("Horizontal", GC.GetBinding(GamepadCode.Axes.LH), KC.GetAxesBinding(KeyCode.A, KeyCode.D));
-        this.IM.RegisterAction("ActionAB", GC.GetBinding(GamepadCode.Axes.RV, GamepadCode.Axes.LV), KC.GetBinding(KeyCode.X, KeyCode.Z));
 
         const frameManager = new FrameManager({
             update: this.update.bind(this),
@@ -110,8 +110,7 @@ export default class App extends React.Component<IAppProps> {
         //     this.world.range -= 1
         // }
 
-        this.world.Update(this.IM);
-
+        this.world.Update();
         this.camera.Update();
     }
     render() {
