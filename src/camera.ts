@@ -1,4 +1,3 @@
-import * as PIXI from "pixi.js";
 import { World } from "./world";
 
 function scaleView(camera: Camera) {
